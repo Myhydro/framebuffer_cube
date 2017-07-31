@@ -57,10 +57,25 @@ static void print_var_si(struct fb_var_screeninfo * si){
 }
 
 
-static uint32_t * get_pixel(struct framebuffer_object * fbo, int x, int y){
-    long location = (x * fbo->vsi.bits_per_pixel) + (y * fbo->fsi.line_length);
-    return (uint32_t *) (fbo->fbp + location);
+static void draw_pixel( struct framebuffer_object * fbo, 
+                        int x, 
+                        int y,
+                        uint8_t red, 
+                        uint8_t green, 
+                        uint8_t blue ){
+
+
+    long location = x*(fbo->vsi.bits_per_pixel/8) + y*fbo->fsi.line_length;
+    uint32_t * pixel_offset = (uint32_t *) (fbo->fbp + location);
+
+    uint32_t pixel_color =  red     << fbo->vsi.red.offset      |
+                            green   << fbo->vsi.green.offset    |
+                            blue    << fbo->vsi.blue.offset     ;
+    
+    *pixel_offset = pixel_color; 
 }
+
+
 
 static int init_framebuffer(struct framebuffer_object * fbo){
     fbo->fd = open("/dev/fb0", O_RDWR);
@@ -111,7 +126,12 @@ int main(){
     
     puts(CCYAN"[PRESS ENTER TO CONTINUE]"CNONE);
     getchar();
-
+    
+    for(int i=10; i<100; i++){
+        draw_pixel(&fbo, i, i, 0xFF, 0, 0);
+    }
+    
+    getchar();
 }
 
 
