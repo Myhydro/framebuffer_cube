@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 #define CNONE "\x1B[0m"
 #define CYELL "\x1B[33m"
@@ -111,6 +112,55 @@ static int init_framebuffer(struct framebuffer_object * fbo){
 
 
 
+void draw_line(struct framebuffer_object * fbo, int x1, int y1, int x2, int y2){
+    float dx = x2 - x1;
+    float dy = y2 - y1; 
+    float delta = dy/dx;
+
+    for(int index_x = x1; index_x != x2; ){
+        (x1<x2) ? (++index_x):(--index_x);
+        int yvalue = delta * (index_x - x1) + y1;
+
+        draw_pixel(fbo, index_x, yvalue, 0, 0xFF, 0);
+    }
+
+}
+
+
+// We need (s)(P)(Tz)(v)
+//
+// P is a 2x3  projection matix. Tz is the 3x3 rotaion matrix for the Z axis
+// v is a 3x8 matrix of points
+
+void draw_cube(struct framebuffer_object * fbo){
+    int points[8][3] = {
+        {0,0,0},
+        {1,0,0},
+        {0,1,0},
+        {1,1,0},
+        {0,0,1},
+        {1,0,1},
+        {0,1,1},
+        {1,1,1}
+    };
+    
+    //Each point can be connected to three other points. The ints in each array
+    //is the index into the "points[]" matrix where there is a connection.
+    //a value of -1 indicates that there is a no connect.
+    int lines[7][3] = {
+        { 1 , 2, 4},
+        {-1 , 3, 5},
+        { 3 ,-1, 6},
+        {-1 ,-1, 7},
+        { 5 , 6,-1},
+        {-1 , 7,-1},
+        { 7 ,-1,-1}
+    };
+
+    
+
+}
+
 int main(){
     struct framebuffer_object fbo;
     
@@ -125,13 +175,14 @@ int main(){
     print_var_si(&fbo.vsi);
     
     puts(CCYAN"[PRESS ENTER TO CONTINUE]"CNONE);
-    getchar();
+    //getchar();
     
-    for(int i=10; i<100; i++){
-        draw_pixel(&fbo, i, i, 0xFF, 0, 0);
+
+    while(1){
+        draw_line(&fbo, 0, 0, 500, 500); 
+        sleep(1);
     }
-    
-    getchar();
+
 }
 
 
